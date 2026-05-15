@@ -1,5 +1,5 @@
 /**
- * Axios-based API client for the CloudAI backend.
+ * Axios-based API client for the InboxIQ backend.
  */
 
 import axios from 'axios';
@@ -91,6 +91,11 @@ export const deleteAccount = (id) =>
 
 export const syncAccount = (id) =>
   client.post(`/accounts/${id}/sync/`);
+
+// ── social auth ──────────────────────────────────────────────────
+
+export const googleLogin = (accessToken) =>
+  client.post('/auth/google/', { access_token: accessToken });
 
 // ── analytics ────────────────────────────────────────────────────
 

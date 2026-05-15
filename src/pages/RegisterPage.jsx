@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import GoogleSignInButton from './GoogleSignInButton';
 import './LoginPage.css';
 
 export default function RegisterPage() {
@@ -58,7 +59,19 @@ export default function RegisterPage() {
             {loading ? 'Creating Account…' : 'Create Account'}
           </button>
         </form>
-        <p className="auth-link">
+
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '12px',
+          margin: '16px 0', color: 'var(--text-dim)', fontSize: '12px',
+        }}>
+          <hr style={{ flex: 1, border: 'none', borderTop: '1px solid var(--border-input)' }} />
+          <span>or sign up with</span>
+          <hr style={{ flex: 1, border: 'none', borderTop: '1px solid var(--border-input)' }} />
+        </div>
+
+        <GoogleSignInButton />
+
+        <p className="auth-link" style={{ marginTop: '16px' }}>
           Already have an account? <Link to="/login">Sign in</Link>
         </p>
       </div>

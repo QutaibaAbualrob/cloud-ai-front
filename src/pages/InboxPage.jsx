@@ -166,7 +166,7 @@ export default function InboxPage() {
           <div className="page-header" style={{ marginBottom: '0.75rem' }}>
             <div className="page-header-title">
               <h1>Inbox</h1>
-              <p>Review and organize emails categorized by CloudAI</p>
+              <p>Review and organize emails categorized by InboxIQ</p>
             </div>
           </div>
 

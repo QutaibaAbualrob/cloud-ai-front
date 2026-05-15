@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import GoogleSignInButton from './GoogleSignInButton';
 import './LoginPage.css';
 
 export default function LoginPage() {
@@ -33,8 +34,8 @@ export default function LoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1>CloudAI</h1>
-        <p className="subtitle">Intelligent Email Organization</p>
+        <h1>InboxIQ</h1>
+        <p className="subtitle">Intelligent Email Categorization & AI Learning</p>
         <form onSubmit={handleSubmit}>
           {error && <div className="error-banner">{error}</div>}
           <label htmlFor="username">Username</label>
@@ -49,11 +50,23 @@ export default function LoginPage() {
             {loading ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
-        <p className="auth-link">
+
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '12px',
+          margin: '16px 0', color: 'var(--text-dim)', fontSize: '12px',
+        }}>
+          <hr style={{ flex: 1, border: 'none', borderTop: '1px solid var(--border-input)' }} />
+          <span>or continue with</span>
+          <hr style={{ flex: 1, border: 'none', borderTop: '1px solid var(--border-input)' }} />
+        </div>
+
+        <GoogleSignInButton />
+
+        <p className="auth-link" style={{ marginTop: '16px' }}>
           Don&apos;t have an account? <Link to="/register">Create one</Link>
         </p>
         <p className="auth-note">
-          CloudAI has read-only access to your emails and never sends mail
+          InboxIQ has read-only access to your emails and never sends mail
           without your consent.
         </p>
       </div>
