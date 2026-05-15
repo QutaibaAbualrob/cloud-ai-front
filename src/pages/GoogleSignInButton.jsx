@@ -31,6 +31,7 @@ export default function GoogleSignInButton({ mode = 'signin' }) {
           client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
           callback: handleGoogleResponse,
           cancel_on_tap_outside: false,
+          use_fedcm_for_prompt: false,
         });
 
         // Map mode to Google GIS text value
