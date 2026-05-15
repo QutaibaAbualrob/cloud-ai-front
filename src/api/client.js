@@ -1,5 +1,5 @@
 /**
- * Axios-based API client for the InboxIQ backend.
+ * Axios-based API client for the AdaptMail backend.
  */
 
 import axios from 'axios';

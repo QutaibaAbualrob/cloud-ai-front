@@ -53,8 +53,8 @@ function AppLayout({ children }) {
     <div className="app-shell">
       <header className="app-header">
         <div className="brand">
-          <div className="brand-logo">IQ</div>
-          <div className="brand-name">InboxIQ</div>
+          <div className="brand-logo">AM</div>
+          <div className="brand-name">AdaptMail</div>
         </div>
         <nav>
           <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'active' : ''}>

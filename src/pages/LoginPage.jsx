@@ -34,7 +34,7 @@ export default function LoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1>InboxIQ</h1>
+        <h1>AdaptMail</h1>
         <p className="subtitle">Intelligent Email Categorization & AI Learning</p>
         <form onSubmit={handleSubmit}>
           {error && <div className="error-banner">{error}</div>}
@@ -66,7 +66,7 @@ export default function LoginPage() {
           Don&apos;t have an account? <Link to="/register">Create one</Link>
         </p>
         <p className="auth-note">
-          InboxIQ has read-only access to your emails and never sends mail
+          AdaptMail has read-only access to your emails and never sends mail
           without your consent.
         </p>
       </div>
