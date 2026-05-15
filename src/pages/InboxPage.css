@@ -98,6 +98,104 @@
   color: var(--text-dim);
 }
 
+/* ── tabs ──────────────────────────────────────────────────── */
+
+.inbox-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+}
+
+.tab-btn {
+  padding: 0.5rem 1.25rem;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.875rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+
+.tab-btn:hover {
+  color: var(--text-main);
+}
+
+.tab-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── categorize button ────────────────────────────────────── */
+
+.btn-categorize {
+  padding: 0.4rem 1rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-categorize:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── select all / checkbox ────────────────────────────────── */
+
+.select-all-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-bottom: none;
+  background: var(--bg-card);
+}
+
+.email-card-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.email-select-cb,
+.select-all-cb {
+  margin-top: 0.35rem;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+}
+
+.email-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Gmail labels ─────────────────────────────────────────── */
+
+.gmail-labels-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+
+.gmail-label {
+  display: inline-block;
+  padding: 0.08rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 /* ── email cards ───────────────────────────────────────────── */
 
 .email-cards {

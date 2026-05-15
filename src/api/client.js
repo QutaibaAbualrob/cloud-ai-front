@@ -64,6 +64,9 @@ export const updateEmail = (id, data) =>
 export const batchCategorize = () =>
   client.post('/emails/batch_categorize/');
 
+export const batchCategorizeSelected = (emailIds) =>
+  client.post('/emails/categorize_selected/', { email_ids: emailIds });
+
 // ── categories ───────────────────────────────────────────────────
 
 export const fetchCategories = () =>

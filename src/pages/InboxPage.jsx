@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   fetchEmails, fetchCategories, updateEmailCategory, fetchEmail,
+  batchCategorizeSelected,
 } from '../api/client';
 import './InboxPage.css';
 
@@ -8,6 +9,16 @@ const PRIORITY_CLASS = {
   high: 'badge-priority-high',
   medium: 'badge-priority-medium',
   low: 'badge-priority-low',
+};
+
+const GMAIL_LABELS = {
+  CATEGORY_PROMOTIONS: { label: 'Promotions', color: '#EC4899' },
+  CATEGORY_SOCIAL:     { label: 'Social',     color: '#3B82F6' },
+  CATEGORY_UPDATES:    { label: 'Updates',    color: '#10B981' },
+  CATEGORY_FORUMS:     { label: 'Forums',     color: '#8B5CF6' },
+  CATEGORY_PRIMARY:    { label: 'Primary',    color: '#F59E0B' },
+  IMPORTANT:           { label: 'Important',  color: '#EF4444' },
+  STARRED:             { label: 'Starred',    color: '#F59E0B' },
 };
 
 export default function InboxPage() {
@@ -21,11 +32,14 @@ export default function InboxPage() {
   const [expandedId, setExpandedId] = useState(null);
   const [expandedEmail, setExpandedEmail] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [activeTab, setActiveTab] = useState('all');
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [categorizing, setCategorizing] = useState(false);
 
   useEffect(() => {
     loadEmails();
     loadCategories();
-  }, [page, search, selectedCategory, uncategorizedOnly]);
+  }, [page, search, selectedCategory, uncategorizedOnly, activeTab]);
 
   const loadEmails = async () => {
     setLoading(true);
@@ -33,9 +47,10 @@ export default function InboxPage() {
       const params = { page };
       if (search) params.search = search;
       if (selectedCategory) params.category = selectedCategory;
-      if (uncategorizedOnly) {
+      if (activeTab === 'categorized') {
+        params.is_ai_classified = true;
+      } else if (uncategorizedOnly) {
         params.is_ai_classified = false;
-        params.category__isnull = true;
       }
       const res = await fetchEmails(params);
       setEmails(res.data.results || res.data);
@@ -53,6 +68,13 @@ export default function InboxPage() {
     } catch (err) {
       console.error('Failed to load categories', err);
     }
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSelectedIds(new Set());
+    setSelectedCategory(null);
+    setPage(1);
   };
 
   const handleCategoryChange = async (emailId, categoryId) => {
@@ -112,6 +134,36 @@ export default function InboxPage() {
     }
   };
 
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === emails.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(emails.map((e) => e.id)));
+    }
+  };
+
+  const handleCategorizeSelected = async () => {
+    if (selectedIds.size === 0) return;
+    setCategorizing(true);
+    try {
+      await batchCategorizeSelected([...selectedIds]);
+      setSelectedIds(new Set());
+    } catch (err) {
+      console.error('Categorization failed', err);
+    } finally {
+      setCategorizing(false);
+    }
+  };
+
   const formatDate = (d) => {
     if (!d) return '';
     const dt = new Date(d);
@@ -131,15 +183,15 @@ export default function InboxPage() {
           <h3>Filter by Category</h3>
           <ul className="filter-cat-list">
             <li
-              className={`filter-cat-item ${!selectedCategory && !uncategorizedOnly ? 'filter-cat-item-active' : ''}`}
+              className={`filter-cat-item ${!selectedCategory && !uncategorizedOnly && activeTab !== 'categorized' ? 'filter-cat-item-active' : ''}`}
               onClick={() => { setSelectedCategory(null); setUncategorizedOnly(false); setPage(1); }}
             >
               <span className="filter-cat-dot" style={{ background: 'conic-gradient(#4f46e5, #22c55e, #facc15, #f97316, #ec4899, #4f46e5)' }} />
               All mail
             </li>
             <li
-              className={`filter-cat-item ${uncategorizedOnly ? 'filter-cat-item-active' : ''}`}
-              onClick={() => { setUncategorizedOnly(!uncategorizedOnly); setSelectedCategory(null); setPage(1); }}
+              className={`filter-cat-item ${uncategorizedOnly && activeTab === 'all' ? 'filter-cat-item-active' : ''}`}
+              onClick={() => { setUncategorizedOnly(!uncategorizedOnly); setSelectedCategory(null); setActiveTab('all'); setPage(1); }}
             >
               <span className="filter-cat-dot" style={{ background: '#6b7280' }} />
               Uncategorized
@@ -170,6 +222,23 @@ export default function InboxPage() {
             </div>
           </div>
 
+          {/* ── tabs ── */}
+          <div className="inbox-tabs">
+            <button
+              className={`tab-btn ${activeTab === 'all' ? 'tab-active' : ''}`}
+              onClick={() => handleTabChange('all')}
+            >
+              All Mail
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'categorized' ? 'tab-active' : ''}`}
+              onClick={() => handleTabChange('categorized')}
+            >
+              Categorized
+            </button>
+          </div>
+
+          {/* ── toolbar ── */}
           <div className="inbox-toolbar">
             <input
               type="search"
@@ -178,7 +247,16 @@ export default function InboxPage() {
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
-            {uncategorizedOnly && (
+            {activeTab === 'all' && (
+              <button
+                className="btn-categorize"
+                disabled={selectedIds.size === 0 || categorizing}
+                onClick={handleCategorizeSelected}
+              >
+                {categorizing ? 'Categorizing…' : `Categorize Selected (${selectedIds.size})`}
+              </button>
+            )}
+            {uncategorizedOnly && activeTab === 'all' && (
               <span className="badge" style={{ background: 'rgba(107,114,128,0.15)', color: 'var(--text-dim)', fontSize: '12px' }}>
                 Uncategorized only
               </span>
@@ -191,6 +269,22 @@ export default function InboxPage() {
             <p className="empty-text">No emails found.</p>
           ) : (
             <>
+              {/* ── select all row ── */}
+              <div className="select-all-row">
+                <input
+                  type="checkbox"
+                  className="select-all-cb"
+                  checked={emails.length > 0 && selectedIds.size === emails.length}
+                  onChange={toggleSelectAll}
+                />
+                <span>
+                  {selectedIds.size === emails.length
+                    ? 'Deselect all'
+                    : `Select all (${emails.length})`}
+                </span>
+              </div>
+
+              {/* ── email cards ── */}
               <div className="email-cards">
                 {emails.map((email) => {
                   const isExpanded = expandedId === email.id;
@@ -201,64 +295,91 @@ export default function InboxPage() {
                       key={email.id}
                       className={`email-card ${isExpanded ? 'email-card-expanded' : ''} ${!email.is_read ? 'email-card-unread' : ''}`}
                     >
-                      <div onClick={() => toggleExpand(email)}>
-                        <div className="email-card-header">
-                          <span className="email-card-sender">
-                            {email.sender_name || email.sender_email}
-                          </span>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div className="email-card-subject">
-                              {email.subject || '(no subject)'}
-                            </div>
-                            <div className="email-card-snippet">
-                              {email.snippet}
+                      <div className="email-card-row">
+                        <input
+                          type="checkbox"
+                          className="email-select-cb"
+                          checked={selectedIds.has(email.id)}
+                          onChange={() => toggleSelect(email.id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <div className="email-card-content" onClick={() => toggleExpand(email)}>
+                          <div className="email-card-header">
+                            <span className="email-card-sender">
+                              {email.sender_name || email.sender_email}
+                            </span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div className="email-card-subject">
+                                {email.subject || '(no subject)'}
+                              </div>
+                              <div className="email-card-snippet">
+                                {email.snippet}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="email-card-meta">
-                          {email.category_name && (
-                            <span
-                              className="category-badge"
-                              style={{
-                                background: `${email.category_color}22`,
-                                color: email.category_color || '#9ca3af',
-                                borderColor: `${email.category_color}66`,
-                              }}
-                            >
-                              {email.category_name}
+                          {/* ── Gmail labels ── */}
+                          {email.gmail_labels && email.gmail_labels.length > 0 && (
+                            <div className="gmail-labels-row">
+                              {email.gmail_labels.map((label) => {
+                                const cfg = GMAIL_LABELS[label];
+                                if (!cfg) return null;
+                                return (
+                                  <span
+                                    key={label}
+                                    className="gmail-label"
+                                    style={{ background: cfg.color + '22', color: cfg.color }}
+                                  >
+                                    {cfg.label}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
+                          <div className="email-card-meta">
+                            {email.category_name && (
+                              <span
+                                className="category-badge"
+                                style={{
+                                  background: `${email.category_color}22`,
+                                  color: email.category_color || '#9ca3af',
+                                  borderColor: `${email.category_color}66`,
+                                }}
+                              >
+                                {email.category_name}
+                              </span>
+                            )}
+                            {email.priority && (
+                              <span className={`badge ${PRIORITY_CLASS[email.priority] || ''}`}>
+                                {email.priority}
+                              </span>
+                            )}
+                            {email.is_urgent && (
+                              <span className="badge badge-urgent">Urgent</span>
+                            )}
+                            {email.has_deadline && (
+                              <span className="badge badge-deadline">Deadline</span>
+                            )}
+                            {email.confidence_score != null && (
+                              <span className="confidence-text">
+                                {(email.confidence_score * 100).toFixed(0)}%
+                              </span>
+                            )}
+                            <span className="email-card-date">
+                              {formatDate(email.received_at)}
                             </span>
-                          )}
-                          {email.priority && (
-                            <span className={`badge ${PRIORITY_CLASS[email.priority] || ''}`}>
-                              {email.priority}
-                            </span>
-                          )}
-                          {email.is_urgent && (
-                            <span className="badge badge-urgent">Urgent</span>
-                          )}
-                          {email.has_deadline && (
-                            <span className="badge badge-deadline">Deadline</span>
-                          )}
-                          {email.confidence_score != null && (
-                            <span className="confidence-text">
-                              {(email.confidence_score * 100).toFixed(0)}%
-                            </span>
-                          )}
-                          <span className="email-card-date">
-                            {formatDate(email.received_at)}
-                          </span>
-                          <div className="email-card-actions" onClick={(e) => e.stopPropagation()}>
-                            <select
-                              value={email.category ?? ''}
-                              onChange={(e) => handleCategoryChange(email.id, Number(e.target.value))}
-                            >
-                              <option value="">Move to…</option>
-                              {categories.map((cat) => (
-                                <option key={cat.id} value={cat.id}>
-                                  {cat.name}
-                                </option>
-                              ))}
-                            </select>
+                            <div className="email-card-actions" onClick={(e) => e.stopPropagation()}>
+                              <select
+                                value={email.category ?? ''}
+                                onChange={(e) => handleCategoryChange(email.id, Number(e.target.value))}
+                              >
+                                <option value="">Move to…</option>
+                                {categories.map((cat) => (
+                                  <option key={cat.id} value={cat.id}>
+                                    {cat.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
                           </div>
                         </div>
                       </div>
