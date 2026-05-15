@@ -97,6 +97,9 @@ export const syncAccount = (id) =>
 export const googleLogin = (accessToken) =>
   client.post('/auth/google/', { access_token: accessToken });
 
+export const fetchGoogleOAuthUrl = (email) =>
+  client.get('/auth/google/oauth-url/', { params: { email } });
+
 // ── analytics ────────────────────────────────────────────────────
 
 export const fetchAnalyticsSummary = () =>

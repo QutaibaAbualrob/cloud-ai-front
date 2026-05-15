@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   fetchAccounts, connectAccount, deleteAccount, syncAccount,
+  fetchGoogleOAuthUrl,
 } from '../api/client';
 import './AccountsPage.css';
 
@@ -24,8 +26,32 @@ export default function AccountsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [syncing, setSyncing] = useState(null);
+  const [oauthMessage, setOauthMessage] = useState(null); // { type: 'success'|'error', text }
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => { loadAccounts(); }, []);
+
+  // Handle OAuth callback result from ?oauth=success|error
+  useEffect(() => {
+    const result = searchParams.get('oauth');
+    if (result === 'success') {
+      const email = searchParams.get('email') || '';
+      setOauthMessage({ type: 'success', text: `Gmail account ${email} connected! Sync to fetch emails.` });
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('oauth');
+      newParams.delete('email');
+      newParams.delete('reason');
+      setSearchParams(newParams, { replace: true });
+      loadAccounts();
+    } else if (result === 'error') {
+      const reason = searchParams.get('reason') || 'unknown';
+      setOauthMessage({ type: 'error', text: `OAuth failed: ${reason}. Please try again.` });
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('oauth');
+      newParams.delete('reason');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams]);
 
   const loadAccounts = async () => {
     try {
@@ -47,6 +73,26 @@ export default function AccountsPage() {
     e.preventDefault();
     setError('');
     setSubmitting(true);
+
+    // Gmail uses OAuth 2.0 — redirect to Google consent screen
+    if (form.provider === 'gmail') {
+      try {
+        const res = await fetchGoogleOAuthUrl(form.email_address);
+        const { url } = res.data;
+        if (url) {
+          window.location.href = url;
+          return; // browser navigates away
+        }
+        setError('Failed to get OAuth URL from server.');
+      } catch (err) {
+        setError('Failed to initiate Google OAuth.');
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    // IMAP / Outlook — direct POST
     try {
       const data = {
         provider: form.provider,
@@ -200,6 +246,12 @@ export default function AccountsPage() {
             </p>
           )}
         </form>
+      )}
+
+      {oauthMessage && (
+        <div className={oauthMessage.type === 'success' ? 'success-banner' : 'error-banner'}>
+          {oauthMessage.text}
+        </div>
       )}
 
       {accounts.length === 0 ? (
