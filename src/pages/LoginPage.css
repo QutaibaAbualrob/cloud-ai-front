@@ -1,0 +1,111 @@
+/* ── auth pages: shared layout ─────────────────────────────── */
+
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.auth-card {
+  background: var(--bg-card);
+  border-radius: 18px;
+  padding: 28px 28px 24px;
+  border: 1px solid var(--border-input);
+  backdrop-filter: blur(32px);
+  box-shadow: var(--shadow-card);
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-card h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.auth-card .subtitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-card label {
+  font-size: 13px;
+  color: #cbd5f5;
+  margin-bottom: -10px;
+}
+
+.auth-card input {
+  border-radius: 10px;
+  border: 1px solid var(--border-input);
+  background: var(--bg-input);
+  color: var(--text-main);
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color var(--trans-slow), box-shadow var(--trans-slow),
+    background-color var(--trans-slow);
+}
+
+.auth-card input::placeholder {
+  color: var(--text-dim);
+}
+
+.auth-card input:focus {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.35);
+  background: var(--bg-deep);
+}
+
+.auth-card button[type='submit'] {
+  margin-top: 6px;
+  border-radius: var(--radius-pill);
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  border: 0;
+  color: #f9fafb;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--shadow-glow);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter var(--trans-slow);
+}
+
+.auth-card button[type='submit']:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-glow-lg);
+}
+
+.auth-card button[type='submit']:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.auth-link {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.auth-link a {
+  color: #c7d2fe;
+  font-weight: 500;
+}
+
+.auth-note {
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: center;
+}
