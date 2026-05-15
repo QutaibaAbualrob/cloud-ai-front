@@ -6,10 +6,10 @@ import { googleLogin } from '../api/client';
 /**
  * Google Sign-In button using Google Identity Services.
  *
- * Loads the GIS library, renders a One Tap prompt on mount,
- * and provides a fallback button for manual sign-in.
+ * Loads the GIS library, renders a branded button.
+ * @param {string} mode - 'signin' (default), 'signup', or 'continue'
  */
-export default function GoogleSignInButton() {
+export default function GoogleSignInButton({ mode = 'signin' }) {
   const btnRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -33,13 +33,17 @@ export default function GoogleSignInButton() {
           cancel_on_tap_outside: false,
         });
 
+        // Map mode to Google GIS text value
+        const textMap = { signin: 'signin_with', signup: 'signup_with', continue: 'continue_with' };
+        const text = textMap[mode] || 'signin_with';
+
         // Render the button
         if (btnRef.current) {
           window.google.accounts.id.renderButton(btnRef.current, {
             type: 'standard',
             shape: 'pill',
             theme: 'outline',
-            text: 'signin_with',
+            text,
             size: 'large',
             width: 320,
             logo_alignment: 'left',

@@ -69,7 +69,7 @@ export default function RegisterPage() {
           <hr style={{ flex: 1, border: 'none', borderTop: '1px solid var(--border-input)' }} />
         </div>
 
-        <GoogleSignInButton />
+        <GoogleSignInButton mode="signup" />
 
         <p className="auth-link" style={{ marginTop: '16px' }}>
           Already have an account? <Link to="/login">Sign in</Link>
