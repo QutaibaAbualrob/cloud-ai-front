@@ -11,16 +11,6 @@ const PRIORITY_CLASS = {
   low: 'badge-priority-low',
 };
 
-const GMAIL_LABELS = {
-  CATEGORY_PROMOTIONS: { label: 'Promotions', color: '#EC4899' },
-  CATEGORY_SOCIAL:     { label: 'Social',     color: '#3B82F6' },
-  CATEGORY_UPDATES:    { label: 'Updates',    color: '#10B981' },
-  CATEGORY_FORUMS:     { label: 'Forums',     color: '#8B5CF6' },
-  CATEGORY_PRIMARY:    { label: 'Primary',    color: '#F59E0B' },
-  IMPORTANT:           { label: 'Important',  color: '#EF4444' },
-  STARRED:             { label: 'Starred',    color: '#F59E0B' },
-};
-
 export default function InboxPage() {
   const [emails, setEmails] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -28,7 +18,6 @@ export default function InboxPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [uncategorizedOnly, setUncategorizedOnly] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [expandedEmail, setExpandedEmail] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
@@ -39,7 +28,7 @@ export default function InboxPage() {
   useEffect(() => {
     loadEmails();
     loadCategories();
-  }, [page, search, selectedCategory, uncategorizedOnly, activeTab]);
+  }, [page, search, selectedCategory, activeTab]);
 
   const loadEmails = async () => {
     setLoading(true);
@@ -49,8 +38,6 @@ export default function InboxPage() {
       if (selectedCategory) params.category = selectedCategory;
       if (activeTab === 'categorized') {
         params.is_ai_classified = true;
-      } else if (uncategorizedOnly) {
-        params.is_ai_classified = false;
       }
       const res = await fetchEmails(params);
       setEmails(res.data.results || res.data);
@@ -183,18 +170,11 @@ export default function InboxPage() {
           <h3>Filter by Category</h3>
           <ul className="filter-cat-list">
             <li
-              className={`filter-cat-item ${!selectedCategory && !uncategorizedOnly && activeTab !== 'categorized' ? 'filter-cat-item-active' : ''}`}
-              onClick={() => { setSelectedCategory(null); setUncategorizedOnly(false); setPage(1); }}
+              className={`filter-cat-item ${!selectedCategory && activeTab !== 'categorized' ? 'filter-cat-item-active' : ''}`}
+              onClick={() => { setSelectedCategory(null); setPage(1); }}
             >
               <span className="filter-cat-dot" style={{ background: 'conic-gradient(#4f46e5, #22c55e, #facc15, #f97316, #ec4899, #4f46e5)' }} />
               All mail
-            </li>
-            <li
-              className={`filter-cat-item ${uncategorizedOnly && activeTab === 'all' ? 'filter-cat-item-active' : ''}`}
-              onClick={() => { setUncategorizedOnly(!uncategorizedOnly); setSelectedCategory(null); setActiveTab('all'); setPage(1); }}
-            >
-              <span className="filter-cat-dot" style={{ background: '#6b7280' }} />
-              Uncategorized
             </li>
             {categories.map((cat) => (
               <li
@@ -202,7 +182,6 @@ export default function InboxPage() {
                 className={`filter-cat-item ${selectedCategory === cat.id ? 'filter-cat-item-active' : ''}`}
                 onClick={() => {
                   setSelectedCategory(selectedCategory === cat.id ? null : cat.id);
-                  setUncategorizedOnly(false);
                   setPage(1);
                 }}
               >
@@ -256,11 +235,7 @@ export default function InboxPage() {
                 {categorizing ? 'Categorizing…' : `Categorize Selected (${selectedIds.size})`}
               </button>
             )}
-            {uncategorizedOnly && activeTab === 'all' && (
-              <span className="badge" style={{ background: 'rgba(107,114,128,0.15)', color: 'var(--text-dim)', fontSize: '12px' }}>
-                Uncategorized only
-              </span>
-            )}
+
           </div>
 
           {loading ? (
@@ -317,28 +292,17 @@ export default function InboxPage() {
                               </div>
                             </div>
                           </div>
-                          {/* ── Gmail labels ── */}
-                          {email.gmail_labels && email.gmail_labels.length > 0 && (
-                            <div className="gmail-labels-row">
-                              {email.gmail_labels.map((label) => {
-                                const cfg = GMAIL_LABELS[label];
-                                if (!cfg) return null;
-                                return (
-                                  <span
-                                    key={label}
-                                    className="gmail-label"
-                                    style={{ background: cfg.color + '22', color: cfg.color }}
-                                  >
-                                    {cfg.label}
-                                  </span>
-                                );
-                              })}
-                            </div>
-                          )}
                           <div className="email-card-meta">
+                            {/* ── Default provider category (only shown when Gmail/provider labels exist) ── */}
+                            {email.default_category && (
+                              <span className="category-badge category-badge-default">
+                                {email.default_category}
+                              </span>
+                            )}
+                            {/* ── AI-assigned category (shown in full color when present) ── */}
                             {email.category_name && (
                               <span
-                                className="category-badge"
+                                className="category-badge category-badge-ai"
                                 style={{
                                   background: `${email.category_color}22`,
                                   color: email.category_color || '#9ca3af',
@@ -410,7 +374,8 @@ export default function InboxPage() {
                                 <div className="email-detail-field">
                                   <div className="field-label">From</div>
                                   <div className="field-value">
-                                    {detail?.sender_name || email.sender_name} &lt;{detail?.sender_email || email.sender_email}&gt;
+                                    <span className="sender-name-bold">{detail?.sender_name || email.sender_name}</span>
+                                    <span className="sender-email-muted"> · {detail?.sender_email || email.sender_email}</span>
                                   </div>
                                 </div>
                                 <div className="email-detail-field">
@@ -437,11 +402,20 @@ export default function InboxPage() {
                                 )}
                               </div>
 
-                              {detail?.body_text && (
-                                <div className="email-detail-body">
-                                  {detail.body_text}
-                                </div>
-                              )}
+                              <div className="email-detail-body">
+                                {(detail?.body_text || email.body_text) ? (
+                                  <>
+                                    <div className="body-section-label">Original Content</div>
+                                    <div className="body-text-content">
+                                      {detail?.body_text || email.body_text}
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="body-text-content body-text-empty">
+                                    No email body content available.
+                                  </div>
+                                )}
+                              </div>
                             </>
                           )}
                         </div>

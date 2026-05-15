@@ -92,6 +92,10 @@
   flex-shrink: 0;
 }
 
+.filter-cat-dot-all {
+  background: conic-gradient(#4f46e5, #22c55e, #facc15, #f97316, #ec4899, #4f46e5);
+}
+
 .filter-cat-count {
   margin-left: auto;
   font-size: 11px;
@@ -178,30 +182,19 @@
   min-width: 0;
 }
 
-/* ── Gmail labels ─────────────────────────────────────────── */
-
-.gmail-labels-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-  margin-top: 0.35rem;
-}
-
-.gmail-label {
-  display: inline-block;
-  padding: 0.08rem 0.4rem;
-  border-radius: 3px;
-  font-size: 0.68rem;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
 /* ── email cards ───────────────────────────────────────────── */
 
 .email-cards {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+/* ── Fix select-all visual bug: first card needs flat top ── */
+.email-cards > .email-card:first-of-type {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: 1px solid var(--border-card);
 }
 
 .email-card {
@@ -261,7 +254,10 @@
   align-items: center;
   gap: 0.6rem;
   margin-top: 0.5rem;
+  flex-wrap: wrap;
 }
+
+/* ── Shared category badge base ───────────────────────────── */
 
 .category-badge {
   display: inline-flex;
@@ -271,7 +267,37 @@
   font-size: 11px;
   font-weight: 500;
   border: 1px solid transparent;
+  line-height: 1.5;
 }
+
+/* ── Default (provider) category — always grayed-out ──────── */
+
+.category-badge-default {
+  background: rgba(107, 114, 128, 0.12);
+  color: #6b7280;
+  border-color: rgba(107, 114, 128, 0.35);
+  font-weight: 400;
+}
+
+/* ── AI-assigned category — full color ────────────────────── */
+
+.category-badge-ai {
+  font-weight: 500;
+}
+
+/* ── Sender display in expanded detail ────────────────────── */
+
+.sender-name-bold {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.sender-email-muted {
+  color: #6b7280;
+  font-size: 0.78rem;
+}
+
+/* ── Confidence / date / actions ──────────────────────────── */
 
 .confidence-text {
   font-size: 0.75rem;
@@ -311,13 +337,37 @@
 }
 
 .email-detail-body {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  line-height: 1.6;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.body-section-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+}
+
+.body-text-content {
+  font-size: 0.88rem;
+  color: var(--text-main);
+  line-height: 1.7;
   white-space: pre-wrap;
-  max-height: 240px;
+  max-height: 320px;
   overflow-y: auto;
-  margin-bottom: 0.75rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(30, 64, 175, 0.2);
+}
+
+.body-text-empty {
+  color: #6b7280;
+  font-style: italic;
+  background: transparent;
+  border: 1px dashed rgba(107, 114, 128, 0.25);
 }
 
 .email-detail-grid {
