@@ -8,6 +8,7 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import AccountsPage from './pages/AccountsPage';
 import CategoriesPage from './pages/CategoriesPage';
 import FeedbackPage from './pages/FeedbackPage';
+import LandingPage from './pages/LandingPage';
 import './App.css';
 
 function ProtectedRoute({ children }) {
@@ -45,7 +46,7 @@ function AppLayout({ children }) {
   const location = useLocation();
 
   const isAuthPage =
-    location.pathname === '/login' || location.pathname === '/register';
+    location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/';
 
   if (isAuthPage) return children;
 
@@ -144,7 +145,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={<LandingPage />} />
           </Routes>
         </AppLayout>
       </AuthProvider>
